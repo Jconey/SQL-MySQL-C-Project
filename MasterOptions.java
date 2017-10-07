@@ -5,7 +5,7 @@ public class MasterOptions {
     private static int selectedMasterID = -1;
     private static String selectedMasterName = "";
     private static int selectedMasterMonsterID = -1;
-    public static void printStartOptions() throws SQLException {
+    public void printStartOptions() throws SQLException {
         Scanner in = new Scanner(System.in);
         System.out.println("Are you a new master or a returning master?");
         System.out.println("\"returning\" or \"new\"");
@@ -18,11 +18,15 @@ public class MasterOptions {
                     repeat = true;
                     System.out.println("What is your name master?");
                     String name = in.nextLine();
+                    this.selectedMasterName = name;
                     int idOfMonster = startNewMasterSelection();
+                    printUpdateName(idOfMonster);
                     conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/monsterdata", "root", "JCbnb34r");
                     Statement insertStatement = conn.createStatement();
                     String insertQuery = "INSERT INTO masters (name ,monsterID) VALUES('" + name + "', '" + idOfMonster + "')";
                     insertStatement.executeUpdate(insertQuery);
+                    getMasterByName();
+                    printOptions();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -58,7 +62,8 @@ public class MasterOptions {
                     break;
                 }
                 case 3: {
-                    System.out.println("NOT SETUP YET");
+                    monsterOptions.fightMasterVsMonster();
+                    break;
                 }
                 case 4: {
                     System.out.println("GoodBye!");
@@ -92,6 +97,30 @@ public class MasterOptions {
         if(results.next()) {
             selectedMasterMonsterID = results.getInt("monsterID");
             selectedMasterID = results.getInt("id");
+        }
+    }
+    private static void printUpdateName(int idOfMonster) throws SQLException {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Would you like to rename your monster?");
+        boolean goodInput = false;
+        while(!goodInput) {
+            String input2 = in.nextLine();
+            if (input2.equals("yes")) {
+                goodInput = true;
+                System.out.println("Input the name for your monster: ");
+                input2 = in.nextLine();
+                Connection conn = null;
+                conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/monsterdata", "root", "JCbnb34r");
+                Statement updateStatement = conn.createStatement();
+                String updateQuery = "UPDATE monsters set name = '" + input2 + "'" + "WHERE id='" + idOfMonster + "'";
+                updateStatement.executeUpdate(updateQuery);
+                System.out.println("Changed monster's name to: " + input2);
+            } else if (input2.equals("no")) {
+                goodInput = true;
+                return;
+            } else {
+                System.out.println("Please input 'yes' or 'no'");
+            }
         }
     }
 }
